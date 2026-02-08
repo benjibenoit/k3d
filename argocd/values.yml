@@ -1,0 +1,8 @@
+server:
+  service:
+    type: LoadBalancer
+
+configs:
+  params:
+    # https://argo-cd.readthedocs.io/en/stable/operator-manual/app-any-namespace/
+    application.namespaces: "*"

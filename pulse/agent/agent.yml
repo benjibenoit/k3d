@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pulse-agent
+  namespace: pulse
+spec:
+  selector:
+    matchLabels:
+      app: pulse-agent
+  template:
+    metadata:
+      labels:
+        app: pulse-agent
+    spec:
+      serviceAccountName: pulse-agent
+      containers:
+        - name: pulse-agent
+          image: rcourtman/pulse:latest
+          command: ["/opt/pulse/bin/pulse-agent-linux-amd64"]
+          args:
+            - --enable-kubernetes
+          env:
+            - name: PULSE_URL
+              value: "http://pulse.pulse.svc.cluster.local:7655"
+            - name: PULSE_TOKEN
+              value: "785c092a97c85a6546283aacd8a571050e39e488b173959abae3e7dfdeb3a8f0"
+            - name: PULSE_AGENT_ID
+              value: "my-k8s-cluster"
+            - name: PULSE_ENABLE_HOST
+              value: "false"
+            - name: PULSE_ENABLE_KUBERNETES
+              value: "true"
+            - name: PULSE_KUBE_INCLUDE_ALL_PODS
+              value: "true"
+            - name: PULSE_KUBE_INCLUDE_ALL_DEPLOYMENTS
+              value: "true"
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      tolerations:
+        - operator: Exists
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pulse-agent
+  namespace: pulse
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pulse-agent-read
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pulse-agent-read
+subjects:
+  - kind: ServiceAccount
+    name: pulse-agent
+    namespace: pulse
+roleRef:
+  kind: ClusterRole
+  name: pulse-agent-read
+  apiGroup: rbac.authorization.k8s.io

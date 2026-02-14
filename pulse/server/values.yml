@@ -1,0 +1,14 @@
+persistence:
+  enabled: true
+  size: 10Gi
+
+ingress:
+  enabled: true
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: "pulse.site.local"
+      paths:
+        - path: "/"
+          pathType: "Prefix"
+  tls: false

@@ -11,7 +11,6 @@ reset:
 	make purge
 	make init
 
-setup-nginx:
-	kubectl create deployment nginx --image=nginx
-	kubectl create service clusterip nginx --tcp=80:80
-	kubectl apply -f test.yml
+argocd:
+	helm upgrade --install argo-cd argo/argo-cd -n argocd --create-namespace -f argocd/values.yml
+	kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo

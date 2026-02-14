@@ -20,3 +20,14 @@ kubectl apply -f argocd/ingress.yml
 
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 ```
+
+pulse
+````shell
+helm repo add pulse https://rcourtman.github.io/Pulse
+helm repo update
+
+helm upgrade --install pulse pulse/pulse -n pulse --create-namespace -f pulse/server/values.yml
+
+kubectl apply -f pulse/server/ingress.yml
+kubectl apply -f pulse/agent/agent.yml
+```
